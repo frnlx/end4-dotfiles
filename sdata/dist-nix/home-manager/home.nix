@@ -171,7 +171,6 @@ quickshell, home_attrs, ... }:
       #hyprlock (Should not be installed via Nix; TODO: should install via nix in future when authentication problem fixed)
       hyprpicker #hyprpicker
       songrec #songrec
-      translate-shell #translate-shell
       wlogout #wlogout
       libqalculate #libqalculate
 

@@ -191,7 +191,6 @@ packages = [
   "hyprlock",
   "hyprpicker",
   "songrec",
-  "translate-shell",
   "qalculate",
   "wlogout"
 ]
