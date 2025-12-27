@@ -158,6 +158,7 @@ ContentPage {
                 }
             }
         }
+    }
 
     ContentSection {
         icon: "notification_sound"
