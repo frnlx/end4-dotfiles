@@ -87,6 +87,12 @@ if [[ -d "$DOTS_DIR" ]]; then
     cp "$DOTS_DIR/.config/quickshell/ii/modules/settings/QuickConfig.qml" \
        "$QS_CONFIG/modules/settings/" 2>/dev/null && echo "  ✓ QuickConfig.qml"
     
+    cp "$DOTS_DIR/.config/quickshell/ii/modules/settings/InterfaceConfig.qml" \
+       "$QS_CONFIG/modules/settings/" 2>/dev/null && echo "  ✓ InterfaceConfig.qml"
+    
+    cp "$DOTS_DIR/.config/quickshell/ii/modules/settings/WallpaperSelectorContent.qml" \
+       "$QS_CONFIG/modules/settings/" 2>/dev/null && echo "  ✓ WallpaperSelectorContent.qml"
+    
     cp "$DOTS_DIR/.config/quickshell/ii/services/LauncherSearch.qml" \
        "$QS_CONFIG/services/" 2>/dev/null && echo "  ✓ LauncherSearch.qml"
     
