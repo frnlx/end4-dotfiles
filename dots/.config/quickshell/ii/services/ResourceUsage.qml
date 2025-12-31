@@ -105,44 +105,31 @@ Singleton {
 	FileView { id: fileMeminfo; path: "/proc/meminfo" }
     FileView { id: fileStat; path: "/proc/stat" }
 
-    // CPU Temperature reading via hwmon (more universal than thermal_zone)
+    // CPU Temperature reading via sensors command (lm_sensors)
     Process {
         id: cpuTempProc
         environment: ({
             LANG: "C",
             LC_ALL: "C"
         })
-        // Try hwmon first (works on most systems), fallback to sensors command
         command: ["bash", "-c", `
-            # Try to find CPU temp from hwmon (coretemp, k10temp, zenpower, etc.)
-            for hwmon in /sys/class/hwmon/hwmon*; do
-                name=$(cat "$hwmon/name" 2>/dev/null)
-                case "$name" in
-                    coretemp|k10temp|zenpower|amdgpu|cpu_thermal|acpitz)
-                        # Read first available temp input (usually package/die temp)
-                        for temp in "$hwmon"/temp*_input; do
-                            if [ -f "$temp" ]; then
-                                cat "$temp"
-                                exit 0
-                            fi
-                        done
-                        ;;
-                esac
-            done
-            # Fallback: try any temp1_input
-            for hwmon in /sys/class/hwmon/hwmon*; do
-                if [ -f "$hwmon/temp1_input" ]; then
-                    cat "$hwmon/temp1_input"
+            # Use sensors command - look for k10temp (AMD) or coretemp (Intel) CPU temp
+            if command -v sensors &>/dev/null; then
+                # AMD: k10temp shows Tctl or Tdie
+                # Intel: coretemp shows Package or Core temps
+                temp=$(sensors 2>/dev/null | grep -E '^(Tctl|Tdie|Package id 0|Core 0):' | head -1 | grep -oE '[+-]?[0-9]+\\.?[0-9]*' | head -1)
+                if [ -n "$temp" ]; then
+                    echo "$temp"
                     exit 0
                 fi
-            done
+            fi
             echo "0"
         `]
         stdout: SplitParser {
             onRead: data => {
-                const temp = parseInt(data.trim())
+                const temp = parseFloat(data.trim())
                 if (temp > 0) {
-                    root.cpuTemp = temp / 1000  // Convert millidegrees to degrees
+                    root.cpuTemp = temp
                 }
             }
         }
