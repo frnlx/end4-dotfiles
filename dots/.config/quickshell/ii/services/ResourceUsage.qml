@@ -112,19 +112,7 @@ Singleton {
             LANG: "C",
             LC_ALL: "C"
         })
-        command: ["bash", "-c", `
-            # Use sensors command - look for k10temp (AMD) or coretemp (Intel) CPU temp
-            if command -v sensors &>/dev/null; then
-                # AMD: k10temp shows Tctl or Tdie
-                # Intel: coretemp shows Package or Core temps
-                temp=$(sensors 2>/dev/null | grep -E '^(Tctl|Tdie|Package id 0|Core 0):' | head -1 | grep -oE '[+-]?[0-9]+\\.?[0-9]*' | head -1)
-                if [ -n "$temp" ]; then
-                    echo "$temp"
-                    exit 0
-                fi
-            fi
-            echo "0"
-        `]
+        command: ["bash", "-c", "sensors 2>/dev/null | grep -E '^(Tctl|Tdie|Package id 0|Core 0):' | head -1 | grep -oE '[+-]?[0-9]+\\.?[0-9]*' | head -1 || echo 0"]
         stdout: SplitParser {
             onRead: data => {
                 const temp = parseFloat(data.trim())
