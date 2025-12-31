@@ -20,6 +20,7 @@ Singleton {
 	property real swapUsed: swapTotal - swapFree
     property real swapUsedPercentage: swapTotal > 0 ? (swapUsed / swapTotal) : 0
     property real cpuUsage: 0
+    property real cpuTemp: 0  // CPU temperature in Celsius
     property var previousCpuStats
 
     property string maxAvailableMemoryString: kbToGbString(ResourceUsage.memoryTotal)
@@ -67,6 +68,7 @@ Singleton {
             // Reload files
             fileMeminfo.reload()
             fileStat.reload()
+            fileCpuTemp.reload()
 
             // Parse memory and swap usage
             const textMeminfo = fileMeminfo.text()
@@ -92,6 +94,12 @@ Singleton {
                 previousCpuStats = { total, idle }
             }
 
+            // Parse CPU temperature (value is in millidegrees Celsius)
+            const tempText = fileCpuTemp.text().trim()
+            if (tempText) {
+                cpuTemp = parseInt(tempText) / 1000
+            }
+
             root.updateHistories()
             interval = Config.options?.resources?.updateInterval ?? 3000
         }
@@ -99,6 +107,7 @@ Singleton {
 
 	FileView { id: fileMeminfo; path: "/proc/meminfo" }
     FileView { id: fileStat; path: "/proc/stat" }
+    FileView { id: fileCpuTemp; path: "/sys/class/thermal/thermal_zone0/temp" }
 
     Process {
         id: findCpuMaxFreqProc
