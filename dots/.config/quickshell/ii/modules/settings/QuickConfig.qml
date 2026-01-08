@@ -99,7 +99,7 @@ ContentPage {
                                     key: "Ctrl"
                                 }
                                 KeyboardKey {
-                                    key: "󰖳"
+                                    key: Config.options.cheatsheet.superKey ?? "󰖳"
                                 }
                                 StyledText {
                                     Layout.alignment: Qt.AlignVCenter
