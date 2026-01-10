@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# When run from inside upstream-updates/YYYYMMDD.n, repo root is two levels up
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 DRY_RUN=0
 RESTART=0
 BACKUP_TS="$(date +%s)"

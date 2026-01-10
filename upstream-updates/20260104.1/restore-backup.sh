@@ -5,7 +5,7 @@ usage(){
   cat <<EOF
 Usage: $0 [timestamp]
 
-Restores backup files created by apply_upstream_merge.sh.
+Restores backup files created by apply-changes.sh.
 If no timestamp is provided, searches for all recent backups.
 
 Examples:

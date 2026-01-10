@@ -1,6 +1,12 @@
 # Changelog: Upstream merge (2b4664671..60fd1ea03)
 
-This file lists each upstream commit that was merged into this branch (range: `2b4664671..60fd1ea03`). Authors are omitted by request. Entries are in chronological order (oldest → newest).
+This file lists each upstream commit that was merged into this branch
+Entries are in chronological order (oldest → newest).
+
+Commit range:
+
+- from : 2b4664671
+- to : 60fd1ea03
 
 - **c5c8ad223** (2026-01-01): lock screen: unfuck resolution
 
@@ -119,5 +125,3 @@ This file lists each upstream commit that was merged into this branch (range: `2
 ---
 
 Generated from git range `2b4664671..60fd1ea03` on 2026-01-08.
-
-If you want this file elsewhere or a different format (compact, grouped by area, or with commit authors), tell me which format and I'll update it.
