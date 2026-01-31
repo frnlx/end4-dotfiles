@@ -27,13 +27,13 @@ fi
 
 echo ""
 echo "Step 1: Removing AI components..."
-rm -rf "$QS_CONFIG/services/ai/" 2>/dev/null || true
 rm -f "$QS_CONFIG/services/Ai.qml" 2>/dev/null || true
+rm -rf "$QS_CONFIG/services/ai/" 2>/dev/null || true
 rm -rf "$QS_CONFIG/modules/ii/sidebarLeft/aiChat/" 2>/dev/null || true
 rm -f "$QS_CONFIG/modules/ii/sidebarLeft/AiChat.qml" 2>/dev/null || true
 rm -rf "$QS_CONFIG/scripts/ai/" 2>/dev/null || true
 rm -rf "$QS_CONFIG/defaults/ai/" 2>/dev/null || true
-rm -rf "$HYPR_CONFIG/scripts/ai/" 2>/dev/null || true
+rm -rf "$HYPR_CONFIG/hyprland/scripts/ai/" 2>/dev/null || true
 echo "  ✓ AI components removed"
 
 echo ""
@@ -54,6 +54,7 @@ echo "  ✓ Translator components removed"
 echo ""
 echo "Step 4: Cleaning up cached data..."
 rm -rf "$HOME/.local/state/quickshell/user/ai/" 2>/dev/null || true
+rm -rf "$HOME/.local/state/quickshell/user/generated/wallpaper/" 2>/dev/null || true
 rm -rf "$HOME/.cache/quickshell/media/boorus/" 2>/dev/null || true
 echo "  ✓ Cached data cleaned"
 
@@ -90,8 +91,8 @@ if [[ -d "$DOTS_DIR" ]]; then
     cp "$DOTS_DIR/.config/quickshell/ii/modules/settings/InterfaceConfig.qml" \
        "$QS_CONFIG/modules/settings/" 2>/dev/null && echo "  ✓ InterfaceConfig.qml"
     
-    cp "$DOTS_DIR/.config/quickshell/ii/modules/settings/WallpaperSelectorContent.qml" \
-       "$QS_CONFIG/modules/settings/" 2>/dev/null && echo "  ✓ WallpaperSelectorContent.qml"
+    cp "$DOTS_DIR/.config/quickshell/ii/modules/ii/wallpaperSelector/WallpaperSelectorContent.qml" \
+       "$QS_CONFIG/modules/ii/wallpaperSelector/" 2>/dev/null && echo "  ✓ WallpaperSelectorContent.qml"
     
     cp "$DOTS_DIR/.config/quickshell/ii/services/LauncherSearch.qml" \
        "$QS_CONFIG/services/" 2>/dev/null && echo "  ✓ LauncherSearch.qml"
