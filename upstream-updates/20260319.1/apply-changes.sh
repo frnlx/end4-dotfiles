@@ -279,8 +279,7 @@ paths=(
     "dots/.config/quickshell/ii/modules/waffle/notificationCenter/CalendarWidget.qml"
     "dots/.config/quickshell/ii/modules/waffle/screenSnip/WRegionSelectionPanel.qml"
     
-    # Services
-    "dots/.config/quickshell/ii/services/Ai.qml"
+    # Services (excluding Ai.qml - removed in fork)
     "dots/.config/quickshell/ii/services/GlobalFocusGrab.qml"
     "dots/.config/quickshell/ii/services/HyprlandAntiFlashbangShader.qml"
     "dots/.config/quickshell/ii/services/HyprlandConfig.qml"
@@ -291,7 +290,7 @@ paths=(
     "dots/.config/quickshell/ii/services/Updates.qml"
     "dots/.config/quickshell/ii/services/hyprlandAntiFlashbangShader/anti-flashbang.glsl"
     
-    # Scripts
+    # Scripts (excluding ai/ - removed in fork)
     "dots/.config/quickshell/ii/scripts/colors/applycolor.sh"
     "dots/.config/quickshell/ii/scripts/colors/code/material-code-set-color.sh"
     "dots/.config/quickshell/ii/scripts/colors/switchwall.sh"
@@ -299,7 +298,6 @@ paths=(
     "dots/.config/quickshell/ii/scripts/hyprland/hyprconfigurator.py"
     "dots/.config/quickshell/ii/scripts/musicRecognition/recognize-music.sh"
     "dots/.config/quickshell/ii/scripts/thumbnails/generate-thumbnails-magick.sh"
-    "dots/.config/quickshell/ii/scripts/ai/gemini-categorize-wallpaper.sh"
     
     # Theming
     "dots/.config/kitty/kitty.conf"
@@ -357,7 +355,7 @@ for p in "${paths[@]}"; do
     
     if [[ ! -e "$src" ]]; then
         log_warn "Source not found, skipping: $p"
-        ((skipped++))
+        ((skipped++)) || true
         continue
     fi
     
@@ -367,12 +365,12 @@ for p in "${paths[@]}"; do
     destdir="$(dirname "$dest")"
     
     if [[ $DRY_RUN -eq 1 ]]; then
-        if [[ -d "$src" ]]; then
+        if [[ $DRY_RUN -eq 1 ]]; then
             log_dry "rsync: $p → ~/$rel"
         else
             log_dry "copy: $p → ~/$rel"
         fi
-        ((applied++))
+        ((applied++)) || true
         continue
     fi
     
@@ -383,7 +381,7 @@ for p in "${paths[@]}"; do
     if [[ -e "$dest" || -L "$dest" ]]; then
         bak="$dest.bak.$BACKUP_TS"
         mv -T "$dest" "$bak"
-        ((backed_up++))
+        ((backed_up++)) || true
     fi
     
     # Copy or rsync
@@ -394,7 +392,7 @@ for p in "${paths[@]}"; do
     fi
     
     log_success "Applied: ~/$rel"
-    ((applied++))
+    ((applied++)) || true
 done
 
 # Handle removed files
@@ -409,7 +407,7 @@ for p in "${removed_paths[@]}"; do
             bak="$dest.bak.$BACKUP_TS"
             mv -T "$dest" "$bak"
             log_success "Removed (backed up): ~/$rel"
-            ((backed_up++))
+            ((backed_up++)) || true
         fi
     fi
 done
