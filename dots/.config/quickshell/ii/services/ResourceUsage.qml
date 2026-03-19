@@ -20,7 +20,6 @@ Singleton {
 	property real swapUsed: swapTotal - swapFree
     property real swapUsedPercentage: swapTotal > 0 ? (swapUsed / swapTotal) : 0
     property real cpuUsage: 0
-    property real cpuTemp: 0  // CPU temperature in Celsius
     property var previousCpuStats
 
     property string maxAvailableMemoryString: kbToGbString(ResourceUsage.memoryTotal)
@@ -95,32 +94,11 @@ Singleton {
 
             root.updateHistories()
             interval = Config.options?.resources?.updateInterval ?? 3000
-
-            // Trigger CPU temperature reading
-            cpuTempProc.running = true
         }
 	}
 
 	FileView { id: fileMeminfo; path: "/proc/meminfo" }
     FileView { id: fileStat; path: "/proc/stat" }
-
-    // CPU Temperature reading via sensors command (lm_sensors)
-    Process {
-        id: cpuTempProc
-        environment: ({
-            LANG: "C",
-            LC_ALL: "C"
-        })
-        command: ["bash", "-c", "sensors 2>/dev/null | grep -E '^(Tctl|Tdie|Package id 0|Core 0):' | head -1 | grep -oE '[+-]?[0-9]+\\.?[0-9]*' | head -1 || echo 0"]
-        stdout: SplitParser {
-            onRead: data => {
-                const temp = parseFloat(data.trim())
-                if (temp > 0) {
-                    root.cpuTemp = temp
-                }
-            }
-        }
-    }
 
     Process {
         id: findCpuMaxFreqProc

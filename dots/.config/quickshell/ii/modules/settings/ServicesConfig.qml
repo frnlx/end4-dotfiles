@@ -8,6 +8,23 @@ ContentPage {
     forceWidth: true
 
     ContentSection {
+        icon: "neurology"
+        title: Translation.tr("AI")
+
+        MaterialTextArea {
+            Layout.fillWidth: true
+            placeholderText: Translation.tr("System prompt")
+            text: Config.options.ai.systemPrompt
+            wrapMode: TextEdit.Wrap
+            onTextChanged: {
+                Qt.callLater(() => {
+                    Config.options.ai.systemPrompt = text;
+                });
+            }
+        }
+    }
+
+    ContentSection {
         icon: "music_cast"
         title: Translation.tr("Music Recognition")
 
@@ -185,6 +202,32 @@ ContentPage {
             }
         }
     }
+
+    // There's no update indicator in ii for now so we shouldn't show this yet
+    // ContentSection {
+    //     icon: "deployed_code_update"
+    //     title: Translation.tr("System updates (Arch only)")
+
+    //     ConfigSwitch {
+    //         text: Translation.tr("Enable update checks")
+    //         checked: Config.options.updates.enableCheck
+    //         onCheckedChanged: {
+    //             Config.options.updates.enableCheck = checked;
+    //         }
+    //     }
+
+    //     ConfigSpinBox {
+    //         icon: "av_timer"
+    //         text: Translation.tr("Check interval (mins)")
+    //         value: Config.options.updates.checkInterval
+    //         from: 60
+    //         to: 1440
+    //         stepSize: 60
+    //         onValueChanged: {
+    //             Config.options.updates.checkInterval = value;
+    //         }
+    //     }
+    // }
 
     ContentSection {
         icon: "weather_mix"

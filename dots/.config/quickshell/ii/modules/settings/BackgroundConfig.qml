@@ -246,8 +246,8 @@ ContentPage {
                 value: Config.options.background.widgets.clock.digital.font.size
                 usePercentTooltip: false
                 buttonIcon: "format_size"
-                from: 70
-                to: 150
+                from: 50
+                to: 700
                 stopIndicatorValues: [90]
                 onValueChanged: {
                     Config.options.background.widgets.clock.digital.font.size = value;
@@ -282,6 +282,18 @@ ContentPage {
         ContentSubsection {
             visible: settingsClock.cookiePresent
             title: Translation.tr("Cookie clock settings")
+
+            ConfigSwitch {
+                buttonIcon: "wand_stars"
+                text: Translation.tr("Auto styling with Gemini")
+                checked: Config.options.background.widgets.clock.cookie.aiStyling
+                onCheckedChanged: {
+                    Config.options.background.widgets.clock.cookie.aiStyling = checked;
+                }
+                StyledToolTip {
+                    text: Translation.tr("Uses Gemini to categorize the wallpaper then picks a preset based on it.\nYou'll need to set Gemini API key on the left sidebar first.\nImages are downscaled for performance, but just to be safe,\ndo not select wallpapers with sensitive information.")
+                }
+            }
 
             ConfigSwitch {
                 buttonIcon: "airwave"
