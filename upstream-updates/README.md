@@ -3,6 +3,14 @@ Purpose
 - Store individual upstream merge bundles (changelog + scripts) for manual application.
 - You should only apply the update(s) if you already have a running system after the before the listed date.
 
+⚠️ CRITICAL: Fork Exclusions
+
+This fork removes AI Chat, Anime/Booru, and Translator components. See `fork-exclusions.txt` for:
+- Files that DO NOT exist in this fork (must never be synced)
+- Files requiring MANUAL MERGE (have fork-specific modifications)
+
+When creating sync/apply scripts, always check `fork-exclusions.txt` first!
+
 Folder layout
 
 - `upstream-updates/` contains one or more subfolders named `YYYYMMDD.n` where:

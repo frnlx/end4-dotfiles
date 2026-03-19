@@ -63,8 +63,7 @@ files=(
     "dots/.config/quickshell/ii/modules/waffle/notificationCenter/CalendarWidget.qml"
     "dots/.config/quickshell/ii/modules/waffle/screenSnip/WRegionSelectionPanel.qml"
     
-    # Services
-    "dots/.config/quickshell/ii/services/Ai.qml"
+    # Services (NOTE: Ai.qml excluded - doesn't exist in fork)
     "dots/.config/quickshell/ii/services/GlobalFocusGrab.qml"
     "dots/.config/quickshell/ii/services/HyprlandAntiFlashbangShader.qml"
     "dots/.config/quickshell/ii/services/HyprlandConfig.qml"
@@ -83,7 +82,7 @@ files=(
     "dots/.config/quickshell/ii/scripts/hyprland/hyprconfigurator.py"
     "dots/.config/quickshell/ii/scripts/musicRecognition/recognize-music.sh"
     "dots/.config/quickshell/ii/scripts/thumbnails/generate-thumbnails-magick.sh"
-    "dots/.config/quickshell/ii/scripts/ai/gemini-categorize-wallpaper.sh"
+    # NOTE: scripts/ai/ excluded - doesn't exist in fork
     
     # Theming
     "dots/.config/kitty/kitty.conf"
@@ -115,7 +114,7 @@ for file in "${files[@]}"; do
     
     if [[ ! -e "$upstream_file" ]]; then
         echo "[SKIP] Not in upstream: $file"
-        ((skipped++))
+        ((skipped++)) || true
         continue
     fi
     
@@ -127,24 +126,24 @@ for file in "${files[@]}"; do
         # Check if directory is empty (git submodule placeholder)
         if [[ -z "$(ls -A "$upstream_file" 2>/dev/null)" ]]; then
             echo "[SKIP] Empty directory (likely submodule): $file"
-            ((skipped++))
+            ((skipped++)) || true
             continue
         fi
         
         if rsync -a --delete "$upstream_file/" "$fork_file/" 2>/dev/null; then
             echo "[SYNC] $file (directory)"
-            ((synced++))
+            ((synced++)) || true
         else
             echo "[FAIL] $file"
-            ((failed++))
+            ((failed++)) || true
         fi
     else
         if cp -a "$upstream_file" "$fork_file" 2>/dev/null; then
             echo "[SYNC] $file"
-            ((synced++))
+            ((synced++)) || true
         else
             echo "[FAIL] $file"
-            ((failed++))
+            ((failed++)) || true
         fi
     fi
 done
