@@ -9,11 +9,6 @@ RippleButton {
 
     property bool showPing: false
 
-    property bool aiChatEnabled: Config.options.policies.ai !== 0
-    property bool translatorEnabled: Config.options.sidebar.translator.enable
-    property bool animeEnabled: Config.options.policies.weeb !== 0
-    visible: aiChatEnabled || translatorEnabled || animeEnabled
-
     property real buttonPadding: 5
     implicitWidth: distroIcon.width + buttonPadding * 2
     implicitHeight: distroIcon.height + buttonPadding * 2
@@ -27,22 +22,6 @@ RippleButton {
 
     onPressed: {
         GlobalStates.sidebarLeftOpen = !GlobalStates.sidebarLeftOpen;
-    }
-
-    Connections {
-        target: Ai
-        function onResponseFinished() {
-            if (GlobalStates.sidebarLeftOpen) return;
-            root.showPing = true;
-        }
-    }
-
-    Connections {
-        target: Booru
-        function onResponseFinished() {
-            if (GlobalStates.sidebarLeftOpen) return;
-            root.showPing = true;
-        }
     }
 
     Connections {
