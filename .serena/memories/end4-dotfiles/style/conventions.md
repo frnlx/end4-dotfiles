@@ -1,0 +1,3 @@
+Quickshell/QML code uses spaces, grouped sections, early returns, and dynamic loading via `Loader`/`FadeLoader`. Optional UI pieces are usually hidden with `shown` rather than destroyed, and Bluetooth/UI toggles follow that pattern.
+
+Sources: `dots/.config/quickshell/ii/modules/ii/sidebarRight/SidebarRightContent.qml:114-180`, `dots/.config/quickshell/ii/modules/waffle/actionCenter/bluetooth/BluetoothControl.qml:16-63`, `dots/.config/quickshell/ii/modules/common/models/quickToggles/BluetoothToggle.qml:1-23`

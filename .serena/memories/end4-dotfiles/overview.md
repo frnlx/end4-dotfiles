@@ -1,0 +1,3 @@
+This repo is a lightweight fork of end-4/dots-hyprland. The main pieces are `dots/` for user configs (Hyprland, Quickshell, app configs), `sdata/` for setup/install scripts, `upstream-updates/` for merge bundles, plus `setup` and `diagnose` entrypoints.
+
+Sources: `sdata/subcmd-install/2.setups.sh:1-73`, `dots/.config/quickshell/ii/modules/common/Config.qml:470-497`, project layout from the repo snapshot

@@ -27,14 +27,31 @@ IFS=$'\n'
 colorlist=($colornames)     # Array of color names
 colorvalues=($colorstrings) # Array of color values
 
-apply_kitty() {  
-  # Check if terminal escape sequence template exists
+apply_kitty() {
+  mkdir -p "$STATE_DIR"/user/generated/terminal
+
+  # Check kittyThemeMode from config - "auto" or "dracula"
+  kitty_theme_mode="auto"
+  if [ -f "$CONFIG_FILE" ]; then
+    kitty_theme_mode=$(jq -r '.appearance.wallpaperTheming.kittyThemeMode // "auto"' "$CONFIG_FILE")
+  fi
+
+  if [ "$kitty_theme_mode" = "dracula" ]; then
+    # Use static Dracula theme
+    if [ ! -f "$SCRIPT_DIR/terminal/kitty-dracula.conf" ]; then
+      echo "Dracula theme file not found. Falling back to auto-generation."
+    else
+      cp "$SCRIPT_DIR/terminal/kitty-dracula.conf" "$STATE_DIR"/user/generated/terminal/kitty-theme.conf
+      return
+    fi
+  fi
+
+  # Auto-generate theme from wallpaper colors
   if [ ! -f "$SCRIPT_DIR/terminal/kitty-theme.conf" ]; then
     echo "Template file not found for Kitty theme. Skipping that."
     return
   fi
   # Copy template
-  mkdir -p "$STATE_DIR"/user/generated/terminal
   cp "$SCRIPT_DIR/terminal/kitty-theme.conf" "$STATE_DIR"/user/generated/terminal/kitty-theme.conf
   # Apply colors
   for i in "${!colorlist[@]}"; do
@@ -43,6 +60,16 @@ apply_kitty() {
 }
 
 apply_anyterm() {
+  # Don't send escape sequences if using static kitty theme (use config file instead)
+  local kitty_theme_mode="auto"
+  if [ -f "$CONFIG_FILE" ]; then
+    kitty_theme_mode=$(jq -r '.appearance.wallpaperTheming.kittyThemeMode // "auto"' "$CONFIG_FILE")
+  fi
+  if [ "$kitty_theme_mode" = "dracula" ]; then
+    echo "Skipping terminal escape sequences (kitty using static Dracula theme from config)"
+    return
+  fi
+
   # Check if terminal escape sequence template exists
   if [ ! -f "$SCRIPT_DIR/terminal/sequences.txt" ]; then
     echo "Template file not found for Terminal. Skipping that."
