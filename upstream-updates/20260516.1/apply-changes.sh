@@ -5,6 +5,7 @@ set -euo pipefail
 # apply-changes.sh - Upstream Update Applicator for 20260516.1
 # ============================================================================
 # Syncs upstream changes to $HOME. Handles Hyprland .conf -> .lua migration.
+# Includes optional pacman update step and dependency rebuilding.
 # ============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -14,6 +15,8 @@ BACKUP_TS="$(date +%s)"
 # Defaults
 DRY_RUN=0
 RESTART=0
+SKIP_PACMAN=0
+SKIP_DEPS=0
 AUTO_YES=0
 
 # Colors for output
@@ -36,12 +39,15 @@ Options:
     -n, --dry-run       Show what will be done without making changes
     -r, --restart       Restart Quickshell after applying changes
     -y, --yes           Auto-confirm all prompts (non-interactive)
+    --skip-pacman       Skip the pacman update prompt
+    --skip-deps         Skip the ./setup install-deps prompt
     -h, --help          Show this help message
 
 Examples:
     $0                  # Interactive mode
     $0 --dry-run        # Preview changes
     $0 -y --restart     # Auto-yes, apply and restart
+    $0 --skip-pacman --skip-deps  # Skip all prompts, just apply configs
 EOF
 }
 
@@ -57,10 +63,177 @@ while [[ ${#} -gt 0 ]]; do
         -n|--dry-run) DRY_RUN=1; shift ;;
         -r|--restart) RESTART=1; shift ;;
         -y|--yes) AUTO_YES=1; shift ;;
+        --skip-pacman) SKIP_PACMAN=1; shift ;;
+        --skip-deps) SKIP_DEPS=1; shift ;;
         -h|--help) usage; exit 0 ;;
         *) log_error "Unknown argument: $1"; usage; exit 2 ;;
     esac
 done
+
+# ============================================================================
+# PACMAN UPDATE PROMPT
+# ============================================================================
+prompt_pacman_update() {
+    if [[ $SKIP_PACMAN -eq 1 ]]; then
+        log_info "Skipping pacman update (--skip-pacman)"
+        return
+    fi
+
+    echo ""
+    echo "=============================================="
+    echo "  SYSTEM PACKAGE UPDATE"
+    echo "=============================================="
+    echo ""
+    echo "This upstream update includes:"
+    echo "  - Quickshell PKGBUILD fixes"
+    echo "  - New dependency: libunwind-devel (for cpptrace)"
+    echo "  - Fedora dependencies reworked"
+    echo ""
+    echo "It's recommended to update system packages BEFORE applying config changes."
+    echo ""
+
+    if [[ $DRY_RUN -eq 1 ]]; then
+        log_dry "Would prompt: Run 'sudo pacman -Syyu' now?"
+        return
+    fi
+
+    if [[ $AUTO_YES -eq 1 ]]; then
+        log_info "Auto-yes mode: Running pacman -Syyu"
+        run_pacman_update
+        return
+    fi
+
+    echo "Options:"
+    echo "  [1] Run 'sudo pacman -Syyu' now (recommended)"
+    echo "  [2] Skip pacman update (I already updated or will do it later)"
+    echo "  [3] Abort script"
+    echo ""
+    
+    while true; do
+        read -rp "Choose an option [1/2/3]: " choice
+        case "$choice" in
+            1)
+                run_pacman_update
+                break
+                ;;
+            2)
+                log_info "Skipping pacman update. Proceeding..."
+                break
+                ;;
+            3)
+                log_info "Aborted by user."
+                exit 0
+                ;;
+            *)
+                log_warn "Invalid choice. Please enter 1, 2, or 3."
+                ;;
+        esac
+    done
+}
+
+run_pacman_update() {
+    log_info "Running system update..."
+    echo ""
+    
+    if sudo pacman -Syyu; then
+        log_success "System packages updated successfully"
+    else
+        log_error "pacman update failed!"
+        echo ""
+        read -rp "Continue with config changes anyway? [y/N]: " cont
+        if [[ ! "$cont" =~ ^[Yy]$ ]]; then
+            log_info "Aborted."
+            exit 1
+        fi
+    fi
+    echo ""
+}
+
+# ============================================================================
+# INSTALL-DEPS PROMPT
+# ============================================================================
+prompt_install_deps() {
+    if [[ $SKIP_DEPS -eq 1 ]]; then
+        log_info "Skipping ./setup install-deps (--skip-deps)"
+        return
+    fi
+
+    echo ""
+    echo "=============================================="
+    echo "  REBUILD DEPENDENCIES"
+    echo "=============================================="
+    echo ""
+    echo "This update includes PKGBUILD / setup changes."
+    echo "You should rebuild dependencies via the setup script."
+    echo ""
+
+    if [[ $DRY_RUN -eq 1 ]]; then
+        log_dry "Would prompt: Run './setup install-deps' now?"
+        return
+    fi
+
+    if [[ $AUTO_YES -eq 1 ]]; then
+        log_info "Auto-yes mode: Running ./setup install-deps"
+        run_install_deps
+        return
+    fi
+
+    echo "Options:"
+    echo "  [1] Run './setup install-deps' now (recommended)"
+    echo "  [2] Skip rebuild (I'll do it manually later)"
+    echo "  [3] Abort script"
+    echo ""
+    
+    while true; do
+        read -rp "Choose an option [1/2/3]: " choice
+        case "$choice" in
+            1)
+                run_install_deps
+                break
+                ;;
+            2)
+                log_info "Skipping dependency rebuild. Proceeding..."
+                break
+                ;;
+            3)
+                log_info "Aborted by user."
+                exit 0
+                ;;
+            *)
+                log_warn "Invalid choice. Please enter 1, 2, or 3."
+                ;;
+        esac
+    done
+}
+
+run_install_deps() {
+    log_info "Running ./setup install-deps..."
+    echo ""
+    
+    if [[ ! -f "$REPO_ROOT/setup" ]]; then
+        log_error "./setup script not found at: $REPO_ROOT/setup"
+        echo ""
+        read -rp "Continue without rebuilding? [y/N]: " cont
+        if [[ ! "$cont" =~ ^[Yy]$ ]]; then
+            log_info "Aborted."
+            exit 1
+        fi
+        return
+    fi
+    
+    if cd "$REPO_ROOT" && ./setup install-deps; then
+        log_success "Dependencies installed/rebuilt successfully"
+    else
+        log_error "./setup install-deps failed!"
+        echo ""
+        read -rp "Continue with config changes anyway? [y/N]: " cont
+        if [[ ! "$cont" =~ ^[Yy]$ ]]; then
+            log_info "Aborted."
+            exit 1
+        fi
+    fi
+    echo ""
+}
 
 # ============================================================================
 # CONFIRMATION PROMPT
@@ -118,7 +291,6 @@ paths=(
     "dots/.config/matugen/config.toml"
     "dots/.config/matugen/templates/gtk-4.0/gtk.css"
     "dots/.config/matugen/templates/hyprland/colors.lua"
-    "dots/.config/quickshell/ii/modules/common/Config.qml"
     "dots/.config/quickshell/ii/modules/common/panels/lock/LockScreen.qml"
     "dots/.config/quickshell/ii/modules/common/widgets/CliphistImage.qml"
     "dots/.config/quickshell/ii/modules/common/widgets/DirectoryIcon.qml"
@@ -141,8 +313,6 @@ paths=(
     "dots/.config/quickshell/ii/modules/ii/sidebarRight/SidebarRightContent.qml"
     "dots/.config/quickshell/ii/modules/ii/sidebarRight/volumeMixer/VolumeMixerEntry.qml"
     "dots/.config/quickshell/ii/modules/ii/wallpaperSelector/WallpaperDirectoryItem.qml"
-    "dots/.config/quickshell/ii/modules/settings/InterfaceConfig.qml"
-    "dots/.config/quickshell/ii/modules/settings/QuickConfig.qml"
     "dots/.config/quickshell/ii/modules/waffle/lock/WaffleLock.qml"
     "dots/.config/quickshell/ii/modules/waffle/notificationCenter/WSingleNotification.qml"
     "dots/.config/quickshell/ii/modules/waffle/taskView/TaskViewContent.qml"
@@ -160,13 +330,6 @@ paths=(
     "dots/.config/quickshell/ii/services/MaterialThemeLoader.qml"
     "dots/.config/quickshell/ii/services/Wallpapers.qml"
     "dots/.config/quickshell/ii/services/hyprlandAntiFlashbangShader/anti-flashbang.glsl"
-    # --- Setup/repo files ---
-    "sdata/dist-arch/illogical-impulse-quickshell-git/PKGBUILD"
-    "sdata/dist-fedora/README.md"
-    "sdata/dist-fedora/feddeps.toml"
-    "sdata/dist-fedora/install-deps.sh"
-    "sdata/subcmd-install/3.files-exp.yaml"
-    "sdata/subcmd-install/3.files-legacy.sh"
 )
 
 # Files that were removed upstream (back up and delete from $HOME)
@@ -208,7 +371,13 @@ if [[ $DRY_RUN -eq 1 ]]; then
     echo ""
 fi
 
-# Step 1: Apply file changes
+# Step 1: Pacman update prompt
+prompt_pacman_update
+
+# Step 2: Install-deps prompt
+prompt_install_deps
+
+# Step 3: Apply file changes
 echo ""
 log_info "Applying configuration changes..."
 echo ""
@@ -316,7 +485,7 @@ if [[ $DRY_RUN -eq 0 ]]; then
     log_info "Port your customizations to the new .lua files when ready."
 fi
 
-# Step 2: Restart Quickshell if requested
+# Step 4: Restart Quickshell if requested
 if [[ $RESTART -eq 1 && $DRY_RUN -eq 0 ]]; then
     echo ""
     log_info "Restarting Quickshell..."
@@ -341,6 +510,12 @@ if [[ $DRY_RUN -eq 1 ]]; then
 else
     log_success "Update complete!"
     echo ""
+    if [[ $SKIP_DEPS -eq 1 ]]; then
+        echo "REMINDER: You skipped ./setup install-deps"
+        echo "  This update requires newer dependencies."
+        echo "  Run './setup install-deps' manually."
+        echo ""
+    fi
     echo "To rollback: ./restore-backup.sh $BACKUP_TS"
 fi
 echo ""
