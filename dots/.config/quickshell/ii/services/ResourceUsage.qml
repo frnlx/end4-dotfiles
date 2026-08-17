@@ -21,9 +21,6 @@ Singleton {
     property real swapUsedPercentage: swapTotal > 0 ? (swapUsed / swapTotal) : 0
     property real cpuUsage: 0
     property var previousCpuStats
-    property real cpuTemperature: 0
-    property string cpuTemperatureString: "--"
-    property bool hasCpuTemperature: false
 
     property string maxAvailableMemoryString: kbToGbString(ResourceUsage.memoryTotal)
     property string maxAvailableSwapString: kbToGbString(ResourceUsage.swapTotal)
@@ -95,11 +92,6 @@ Singleton {
                 previousCpuStats = { total, idle }
             }
 
-            // Parse CPU temperature (if available)
-            if (hasCpuTemperature) {
-                findTempProc.running = true
-            }
-
             root.updateHistories()
             interval = Config.options?.resources?.updateInterval ?? 3000
         }
@@ -122,49 +114,5 @@ Singleton {
                 root.maxAvailableCpuString = (parseFloat(outputCollector.text) / 1000).toFixed(0) + " GHz"
             }
         }
-    }
-
-    // Find and read CPU temperature sensor
-    Process {
-        id: findTempProc
-        environment: ({
-            LANG: "C",
-            LC_ALL: "C"
-        })
-        command: ["bash", "-c", `
-            for hwmon in /sys/class/hwmon/hwmon*/name; do
-                name=$(cat "$hwmon" 2>/dev/null)
-                if [[ "$name" == "k10temp" || "$name" == "coretemp" || "$name" == "zenpower" ]]; then
-                    dir=$(dirname "$hwmon")
-                    if [ -f "$dir/temp1_input" ]; then
-                        cat "$dir/temp1_input"
-                        exit 0
-                    fi
-                fi
-            done
-            exit 1
-        `]
-        running: false
-        stdout: StdioCollector {
-            id: tempCollector
-            onStreamFinished: {
-                const tempMillidegrees = Number(tempCollector.text.trim())
-                if (tempMillidegrees > 0) {
-                    root.hasCpuTemperature = true
-                    root.cpuTemperature = tempMillidegrees / 1000
-                    root.cpuTemperatureString = root.cpuTemperature.toFixed(1) + "°C"
-                }
-            }
-        }
-        onExited: (code) => {
-            if (code !== 0 && !root.hasCpuTemperature) {
-                root.cpuTemperatureString = "N/A"
-            }
-        }
-    }
-
-    Component.onCompleted: {
-        // Initial temperature check
-        findTempProc.running = true
     }
 }

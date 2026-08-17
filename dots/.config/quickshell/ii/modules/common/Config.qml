@@ -102,7 +102,6 @@ Singleton {
                     property bool enableAppsAndShell: true
                     property bool enableQtApps: true
                     property bool enableTerminal: true
-                    property string kittyThemeMode: "auto" // "auto" (wallpaper-generated) or "dracula" (static Dracula theme)
                     property JsonObject terminalGenerationProps: JsonObject {
                         property real harmony: 0.6
                         property real harmonizeThreshold: 100
