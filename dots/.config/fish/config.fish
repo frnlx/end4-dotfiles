@@ -14,7 +14,10 @@ if status is-interactive
     
     # Colors
     if test -f ~/.local/state/quickshell/user/generated/terminal/sequences.txt
-        cat ~/.local/state/quickshell/user/generated/terminal/sequences.txt
+        set -l kitty_mode (jq -r '.appearance.wallpaperTheming.kittyThemeMode // "auto"' ~/.config/illogical-impulse/config.json 2>/dev/null)
+        if test "$kitty_mode" != "dracula"
+            cat ~/.local/state/quickshell/user/generated/terminal/sequences.txt
+        end
     end
 
     # Aliases
