@@ -42,6 +42,9 @@ apply_kitty() {
       echo "Dracula theme file not found. Falling back to auto-generation."
     else
       cp "$SCRIPT_DIR/terminal/kitty-dracula.conf" "$STATE_DIR"/user/generated/terminal/kitty-theme.conf
+      if pgrep -f kitty >/dev/null; then
+        kill -SIGUSR1 $(pidof kitty) 2>/dev/null || true
+      fi
       return
     fi
   fi

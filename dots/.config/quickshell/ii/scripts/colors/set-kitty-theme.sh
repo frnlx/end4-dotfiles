@@ -43,6 +43,7 @@ apply_theme() {
     if [ "$mode" = "dracula" ]; then
         if [ -f "$SCRIPT_DIR/terminal/kitty-dracula.conf" ]; then
             cp "$SCRIPT_DIR/terminal/kitty-dracula.conf" "$OUTPUT_DIR/kitty-theme.conf"
+            rm -f "$OUTPUT_DIR/sequences.txt"
             echo "Applied Dracula theme"
         else
             echo "Dracula theme file not found!"
